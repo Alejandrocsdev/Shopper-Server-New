@@ -1,5 +1,5 @@
 // 引用 Models
-const { sequelize, User } = require('../models')
+const { User } = require('../models')
 // 引用異步錯誤處理中間件
 const { asyncError } = require('../middlewares')
 // 自訂錯誤訊息模組
@@ -7,28 +7,30 @@ const CustomError = require('../errors/CustomError')
 // 引用自定驗證模組
 const Validator = require('../Validator')
 // 引用驗證模組
-// const Joi = require('joi')
+const Joi = require('joi')
+// 引用 加密 模組
+const { encrypt } = require('../utils')
 // 需驗證Body路由
-// const v = {
-//   phone: ['sendOtp', 'verifyOtp'],
-//   otp: ['verifyOtp']
-// }
+const v = {
+  phone: ['signUp'],
+  password: ['signUp']
+}
 // Body驗證條件
-// const schema = (route) => {
-//   return Joi.object({
-//     phone: v['phone'].includes(route) 
-//       ? Joi.string().regex(/^09/).length(10).required() 
-//       : Joi.forbidden(),
-//     otp: v['otp'].includes(route) 
-//       ? Joi.string().length(6).required() 
-//       : Joi.forbidden()
-//   })
-// }
+const schema = (route) => {
+  return Joi.object({
+    phone: v['phone'].includes(route)
+      ? Joi.string().regex(/^09/).length(10).required()
+      : Joi.forbidden(),
+    password: v['password'].includes(route)
+      ? Joi.string().min(8).max(16).regex(/[a-z]/).regex(/[A-Z]/).regex(/\d/).required()
+      : Joi.forbidden()
+  })
+}
 
 class UserController extends Validator {
-  // constructor() {
-  //   super(schema)
-  // }
+  constructor() {
+    super(schema)
+  }
 
   getUserById = asyncError(async (req, res, next) => {
     const { userId } = req.params
@@ -64,6 +66,24 @@ class UserController extends Validator {
     }
 
     res.status(200).json({ message: user ? '用戶已經註冊' : '用戶尚未註冊', userData })
+  })
+
+  signUp = asyncError(async (req, res, next) => {
+    // 驗證請求主體
+    this.validateBody(req.body, 'signUp')
+    const { phone, password } = req.body
+
+    const hashedPassword = await encrypt.hash(password)
+
+    // 生成唯一帳號
+    const username = await encrypt.uniqueUsername(User)
+
+    const user = await User.create({ username, password: hashedPassword, phone })
+
+    const newUser = user.toJSON()
+    delete newUser.password
+
+    res.status(201).json({ message: '新用戶註冊成功', newUser })
   })
 }
 

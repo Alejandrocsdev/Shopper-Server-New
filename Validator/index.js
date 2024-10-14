@@ -10,9 +10,7 @@ class Validator {
   validateBody(payload, route) {
     // 驗證錯誤
     const { error } = this.schema(route).validate(payload)
-    console.log(error.details)
     if (error) {
-      console.log(error.message)
       throw new CustomError(400, 'invalidPayload', error.details[0].message)
     }
     // error.details[0]:

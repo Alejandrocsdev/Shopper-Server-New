@@ -13,7 +13,7 @@ class Encrypt {
       const hashedData = await bcrypt.hash(data, salt)
       return hashedData
     } catch (err) {
-      throw new CustomError(500, '', '雜湊失敗 (Encrypt.hash)')
+      throw new CustomError(500, 'X', '雜湊失敗 (Encrypt.hash)')
     }
   }
 
@@ -23,7 +23,7 @@ class Encrypt {
       const isMatch = await bcrypt.compare(data, hashedData)
       return isMatch
     } catch (err) {
-      throw new CustomError(500, '', '雜湊比對失敗 (Encrypt.hashCompare)')
+      throw new CustomError(500, 'X', '雜湊比對失敗 (Encrypt.hashCompare)')
     }
   }
 
@@ -44,6 +44,53 @@ class Encrypt {
       return String(code)
     } catch (err) {
       throw new CustomError(500, '', '生成OTP失敗 (Encrypt.otp)')
+    }
+  }
+
+  // 隨機帳號
+  randomCredential(length = 10) {
+    try {
+      const special = '!@#$%&'
+      const upperCase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      const lowerCase = 'abcdefghijklmnopqrstuvwxyz'
+      const number = '0123456789'
+
+      const charSet = special + upperCase + lowerCase + number
+
+      let result = ''
+      for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * charSet.length)
+        result += charSet[randomIndex]
+      }
+      return result
+    } catch (err) {
+      throw new CustomError(500, '', '隨機帳號生成失敗 (Encrypt.randomCredential)')
+    }
+  }
+
+  // 生成唯一帳號
+  async uniqueUsername(model) {
+    try {
+      // 檢查帳號是否存在函式
+      const isExist = async (username) => {
+        const user = await model.findOne({ where: { username } })
+        return !!user
+      }
+
+      let username
+      let isUnique = false
+
+      // 持續生成帳號直到生成唯一的帳號
+      while (!isUnique) {
+        // 隨機生成帳號
+        username = this.randomCredential()
+        // 檢查帳號是否存在
+        isUnique = !(await isExist(username))
+      }
+
+      return username
+    } catch (err) {
+      throw new CustomError(500, '', '生成唯一帳號失敗 (Encrypt.uniqueUsername)')
     }
   }
 }

@@ -1,5 +1,5 @@
 // 引用 Models
-const { sequelize, Otp, User } = require('../models')
+const { Otp, User } = require('../models')
 // 引用異步錯誤處理中間件
 const { asyncError } = require('../middlewares')
 // 自訂錯誤訊息模組
@@ -30,17 +30,14 @@ const schema = (route) => {
   })
 }
 
-class AuthController extends Validator {
+class VerificationController extends Validator {
   constructor() {
     super(schema)
   }
 
   sendOtp = asyncError(async (req, res, next) => {
-    // 建立事務
-    const transaction = await sequelize.transaction()
-
     // 驗證請求主體
-    this.validateBody(req.body, 'sendOtps')
+    this.validateBody(req.body, 'sendOtp')
     // isReset: 是否為重設密碼
     const { phone, isReset } = req.body
 
@@ -61,37 +58,24 @@ class AuthController extends Validator {
 
     // OTP 有效期限(15分鐘)
     const expireTime = Date.now() + 15 * 60 * 1000
-    try {
-      // 查詢OTP紀錄, 不存在則新增
-      const [otpRecord, created] = await Otp.findOrCreate({
-        where: { phone },
-        defaults: { phone, hashedOtp, expireTime },
-        transaction
-      })
+    // 查詢OTP紀錄, 不存在則新增
+    const [otpRecord, created] = await Otp.findOrCreate({
+      where: { phone },
+      defaults: { phone, hashedOtp, expireTime }
+    })
 
-      // 如果 OTP 記錄已存在，更新 OTP 和 expireTime
-      if (!created) {
-        await otpRecord.update({ hashedOtp, expireTime, attempts: 0 }, { transaction })
-      }
-
-      // 提交事務
-      await transaction.commit()
-
-      // 發送簡訊
-      await sendSMS({ phone, otp }, 'verify', smsType)
-      // 成功回應
-      res.status(200).json({ message: `簡訊OTP發送成功 (${smsType})` })
-    } catch (err) {
-      // 回滾事務
-      await transaction.rollback()
-      next(err)
+    // 如果 OTP 記錄已存在，更新 OTP 和 expireTime
+    if (!created) {
+      await otpRecord.update({ hashedOtp, expireTime, attempts: 0 })
     }
+
+    // 發送簡訊
+    await sendSMS({ phone, otp }, 'verify', smsType)
+    // 成功回應
+    res.status(200).json({ message: `簡訊OTP發送成功 (${smsType})` })
   })
 
   verifyOtp = asyncError(async (req, res, next) => {
-    // 建立事務
-    const transaction = await sequelize.transaction()
-
     // 驗證請求主體
     this.validateBody(req.body, 'verifyOtp')
     const { phone, otp } = req.body
@@ -109,41 +93,32 @@ class AuthController extends Validator {
     // 驗證 OTP 是否正確
     const isMatch = await encrypt.hashCompare(otp, hashedOtp)
 
-    try {
-      // 刪除Otp資訊: OTP 正確 / OTP 失效 / 嘗試次數過多
-      if (isMatch || expireTime <= Date.now() || newAttempts > 5) {
-        // 刪除Otp資訊
-        await Otp.destroy({ where: { hashedOtp }, transaction })
+    // 刪除Otp資訊: OTP 正確 / OTP 失效 / 嘗試次數過多
+    if (isMatch || expireTime <= Date.now() || newAttempts > 5) {
+      // 刪除Otp資訊
+      await Otp.destroy({ where: { hashedOtp } })
 
-        // OTP 正確
-        if (isMatch) {
-          res.status(200).json({ message: `簡訊OTP驗證成功 (${smsType})` })
-        }
-        // OTP 失效
-        else if (expireTime <= Date.now()) {
-          throw new CustomError(401, '', '您輸入的驗證碼已經過期。請再次嘗試請求新的驗證碼。')
-        }
-        // 嘗試次數過多
-        else if (newAttempts > 5) {
-          throw new CustomError(429, '', '輸入錯誤達5次。請再次嘗試請求新的驗證碼。')
-        }
+      // OTP 正確
+      if (isMatch) {
+        res.status(200).json({ message: `簡訊OTP驗證成功 (${smsType})` })
       }
-      // 未達嘗試限制: 更新嘗試次數
-      else {
-        // 更新Otp資訊
-        await Otp.update({ attempts: newAttempts }, { where: { phone }, transaction })
-
-        // 提交事務
-        await transaction.commit()
-
-        throw new CustomError(401, '', '無效的驗證碼。')
+      // OTP 失效
+      else if (expireTime <= Date.now()) {
+        throw new CustomError(401, 'otpExpired', '您輸入的驗證碼已經過期。請再次嘗試請求新的驗證碼。')
       }
-    } catch (err) {
-      // 回滾事務
-      await transaction.rollback()
-      next(err)
+      // 嘗試次數過多
+      else if (newAttempts > 5) {
+        throw new CustomError(429, 'tooManyAttempts', '輸入錯誤達5次。請再次嘗試請求新的驗證碼。')
+      }
+    }
+    // 未達嘗試限制: 更新嘗試次數
+    else {
+      // 更新Otp資訊
+      await Otp.update({ attempts: newAttempts }, { where: { phone } })
+
+      throw new CustomError(401, 'invalidOtp', '無效的驗證碼。')
     }
   })
 }
 
-module.exports = new AuthController()
+module.exports = new VerificationController()
