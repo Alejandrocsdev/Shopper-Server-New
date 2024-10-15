@@ -15,6 +15,8 @@ const corsOptions = {
   origin: frontUrl,
   credentials: true
 }
+// 引用 Passport 初始化模組
+const { passportInit } = require('./config/passport')
 // 引用路由模組
 const routes = require('./routes')
 // 引用自定義中間件(預設路由/全域錯誤)
@@ -25,6 +27,8 @@ app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 // 中間件: 跨來源資源共用
 app.use(cors(corsOptions))
+// 初始化 Passport
+app.use(passportInit)
 // 掛載路由中間件
 app.use('/api', routes)
 // 掛載預設路由中間件

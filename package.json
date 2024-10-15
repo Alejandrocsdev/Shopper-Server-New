@@ -4,7 +4,8 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "reset": "npx sequelize db:drop && npx sequelize db:create && npx sequelize db:migrate"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +19,8 @@
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.3",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
     "sequelize": "^6.37.4",
     "twilio": "^5.3.3"
   },
