@@ -14,6 +14,11 @@ module.exports = {
         type: Sequelize.STRING,
         unique: true
       },
+      username_modified: {
+        allowNull: false,
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
       password: {
         allowNull: false,
         type: Sequelize.STRING
@@ -29,6 +34,10 @@ module.exports = {
         unique: true
       },
       avatar: {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
+      refresh_token: {
         allowNull: true,
         type: Sequelize.STRING
       },

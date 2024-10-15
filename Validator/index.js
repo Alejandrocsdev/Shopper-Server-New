@@ -11,13 +11,9 @@ class Validator {
     // 驗證錯誤
     const { error } = this.schema(route).validate(payload)
     if (error) {
+      console.log(error.message)
       throw new CustomError(400, 'invalidPayload', error.details[0].message)
     }
-    // error.details[0]:
-    // - message: '"phone" is not allowed',
-    // - path: [ 'phone' ],
-    // - type: 'any.unknown',
-    // - context: { label: 'phone', value: '0938473300', key: 'phone' }
   }
 
   // 驗證(多筆)資料是否存在

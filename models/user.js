@@ -11,6 +11,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         unique: true
       },
+      usernameModified: {
+        allowNull: false,
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+      },
       password: {
         allowNull: false,
         type: DataTypes.STRING
@@ -26,6 +31,10 @@ module.exports = (sequelize, DataTypes) => {
         unique: true
       },
       avatar: {
+        allowNull: true,
+        type: DataTypes.STRING
+      },
+      refreshToken: {
         allowNull: true,
         type: DataTypes.STRING
       }

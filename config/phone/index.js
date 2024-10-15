@@ -8,10 +8,8 @@ function sendSMS(data, type, smsType) {
   switch (true) {
     case smsType === 'twsms':
       return twsms(data, type)
-      break
     case smsType === 'twilio':
       return twilio(data, type)
-      break
   }
 }
 

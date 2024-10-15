@@ -25,8 +25,12 @@ const schema = (route) => {
     phone: v['phone'].includes(route)
       ? Joi.string().regex(/^09/).length(10).required()
       : Joi.forbidden(),
-    isReset: v['isReset'].includes(route) ? Joi.boolean().default(false) : Joi.forbidden(),
-    otp: v['otp'].includes(route) ? Joi.string().length(6).required() : Joi.forbidden()
+    isReset: v['isReset'].includes(route) 
+      ? Joi.boolean().default(false) 
+      : Joi.forbidden(),
+    otp: v['otp'].includes(route) 
+      ? Joi.string().length(6).required() 
+      : Joi.forbidden()
   })
 }
 
@@ -53,7 +57,7 @@ class VerificationController extends Validator {
     if (isReset) {
       // 1. 如電話不存在,無法重設密碼
       // 2. 如是註冊,電話存在與否都會嘗試發送OTP
-      this.validateData([user], `未有使用電話 ${phone} 註冊用戶 `)
+      this.validateData([user], `未有使用電話 ${phone} 註冊用戶`)
     }
 
     // OTP 有效期限(15分鐘)
