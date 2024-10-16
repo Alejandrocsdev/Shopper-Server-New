@@ -48,7 +48,6 @@ class AuthController extends Validator {
 
   signIn = asyncError(async (req, res, next) => {
     const { user } = req
-
     console.log('user', user)
 
     if (!user) throw new CustomError(401, 'signInFail', '登入失敗')
@@ -58,7 +57,7 @@ class AuthController extends Validator {
     cookie.store(res, refreshToken)
 
     const accessToken = encrypt.signAccessToken(user.id)
-    res.status(200).json({ message: '密碼登入成功', accessToken })
+    res.status(200).json({ message: '登入成功', accessToken })
   })
 
   signUp = asyncError(async (req, res, next) => {

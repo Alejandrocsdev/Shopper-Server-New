@@ -13,8 +13,6 @@ const customFields = { usernameField: 'signInKey', passwordField: 'password' }
 // 驗證函式
 const verifyCallback = async (signInKey, password, cb) => {
   try {
-    console.log('signInKey', signInKey)
-    console.log('password', password)
     // 根據 信箱 / 電話 / 帳號 查找用戶
     const users = await Promise.all([
       User.findOne({ where: { email: signInKey } }),
@@ -28,9 +26,6 @@ const verifyCallback = async (signInKey, password, cb) => {
 
     // 根據索引取得用戶
     const user = users[userIndex]
-
-    console.log('userIndex', userIndex)
-    console.log('user', user)
 
     // 比較密碼
     const match = await encrypt.hashCompare(password, user.password)

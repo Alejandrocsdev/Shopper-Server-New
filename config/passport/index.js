@@ -6,15 +6,21 @@ const { User } = require('../../models')
 const { encrypt } = require('../../utils')
 // 引用客製化錯誤訊息模組
 const CustomError = require('../../errors/CustomError')
+
 // 策略
 const localStrategy = require('./local')
+const smsStrategy = require('./sms')
 
 // 使用策略
 passport.use('local', localStrategy)
+passport.use('sms', smsStrategy)
+
 // Passport 初始化
 const passportInit = passport.initialize()
+
 // 密碼登入驗證 / 簡訊登入驗證
 const pwdSignInAuth = passport.authenticate('local', { session: false })
+const smsSignInAuth = passport.authenticate('sms', { session: false })
 
 // 憑證驗證
 const jwtAuth = async (req, res, next) => {
@@ -47,4 +53,4 @@ const jwtAuth = async (req, res, next) => {
   }
 }
 
-module.exports = { passportInit, pwdSignInAuth, jwtAuth }
+module.exports = { passportInit, pwdSignInAuth, smsSignInAuth, jwtAuth }

@@ -20,6 +20,7 @@
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.3",
     "passport": "^0.7.0",
+    "passport-custom": "^1.1.1",
     "passport-local": "^1.0.0",
     "sequelize": "^6.37.4",
     "twilio": "^5.3.3"

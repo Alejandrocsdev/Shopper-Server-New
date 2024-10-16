@@ -100,7 +100,7 @@ class VerificationController extends Validator {
     // 刪除Otp資訊: OTP 正確 / OTP 失效 / 嘗試次數過多
     if (isMatch || expireTime <= Date.now() || newAttempts > 5) {
       // 刪除Otp資訊
-      await Otp.destroy({ where: { hashedOtp } })
+      await Otp.destroy({ where: { phone } })
 
       // OTP 正確
       if (isMatch) {
