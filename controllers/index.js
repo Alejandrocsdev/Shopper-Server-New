@@ -1,5 +1,5 @@
 const userController = require('./user')
 const authController = require('./auth')
-const verificationController = require('./verification')
+const verifController = require('./verif')
 
-module.exports = { authController, userController, verificationController }
+module.exports = { authController, userController, verifController }

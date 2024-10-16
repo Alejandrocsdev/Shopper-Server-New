@@ -3,10 +3,10 @@ const router = Router()
 
 const auth = require('./auth')
 const user = require('./user')
-const verification = require('./verification')
+const verif = require('./verif')
 
 router.use('/auth', auth)
 router.use('/user', user)
-router.use('/verification', verification)
+router.use('/verif', verif)
 
 module.exports = router
